@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مطعم Sabry</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>مطعم Sabry</h1>
+            <div class="header-buttons">
+                <button id="showInvoicesBtn" onclick="showInvoicesHistory()">سجل الفواتير</button>
+                <button id="showInventoryBtn" onclick="showInventory()">عرض المخزون</button>
+                <button id="showProductHistoryBtn" onclick="showProductHistory()">سجل الواردات</button>
+            </div>
+        </header>
+        
+        <div class="main-sections">
+            <!-- قسم إضافة المنتجات -->
+            <section class="product-section">
+                <h2>إضافة منتج جديد</h2>
+                <form id="addProductForm">
+                    <input type="text" id="productName" placeholder="اسم المنتج" required>
+                    <input type="text" id="supplierName" placeholder="اسم المورد" required>
+                    <input type="number" id="productPrice" placeholder="السعر" required>
+                    <input type="number" id="productQuantity" placeholder="الكمية" required>
+                    <button type="submit">إضافة منتج</button>
+                </form>
+            </section>
+
+            <!-- قسم البيع -->
+            <section class="sales-section">
+                <h2>نظام البيع</h2>
+                <div class="sales-form">
+                    <select id="productSelect">
+                        <option value="">اختر المنتج</option>
+                    </select>
+                    <input type="number" id="saleQuantity" placeholder="الكمية" min="1">
+                    <button onclick="addToCart()">إضافة للسلة</button>
+                </div>
+
+                <!-- عرض السلة -->
+                <div class="cart">
+                    <h3>السلة</h3>
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>المنتج</th>
+                                <th>السعر</th>
+                                <th>الكمية</th>
+                                <th>الإجمالي</th>
+                                <th>حذف</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartItems">
+                        </tbody>
+                    </table>
+                    <div class="cart-total">
+                        <strong>الإجمالي: </strong>
+                        <span id="totalAmount">0</span> 
+                    </div>
+                    <button onclick="createInvoice()">إنشاء فاتورة</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- النافذة المنبثقة للفاتورة -->
+    <div id="invoiceModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div class="invoice-content">
+                <h3>فاتورة مطعم Sabry</h3>
+                <div class="invoice-details">
+                    <p>رقم الفاتورة: <span id="invoiceNumber"></span></p>
+                    <p>التاريخ: <span id="invoiceDate"></span></p>
+                    <p>الوقت: <span id="invoiceTime"></span></p>
+                </div>
+                <table id="invoiceTable">
+                    <thead>
+                        <tr>
+                            <th>المنتج</th>
+                            <th>سعر الوحدة</th>
+                            <th>الكمية</th>
+                            <th>الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceItems"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3">الإجمالي الكلي:</td>
+                            <td id="invoiceTotalAmount"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <button onclick="printInvoice()" class="print-btn">طباعة الفاتورة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- إضافة نافذة منبثقة لعرض سجل الفواتير -->
+    <div id="invoicesHistoryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeInvoicesHistory()">&times;</span>
+            <div class="invoices-history">
+                <h2>سجل الفواتير</h2>
+                <div id="invoicesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة منبثقة لعرض المخزون -->
+    <div id="inventoryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeInventory()">&times;</span>
+            <h2>المخزون</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>اسم المنتج</th>
+                        <th>السعر</th>
+                        <th>الكمية المتوفرة</th>
+                        <th>القيمة الإجمالية</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryItems"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3">إجمالي قيمة المخزون:</td>
+                        <td id="totalInventoryValue">0 جنيه</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- نافذة منبثقة لعرض سجل المنتجات -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="document.getElementById('historyModal').style.display='none'">&times;</span>
+            <div class="history-header">
+                <h2>سجل إضافة المنتجات</h2>
+                <div class="filter-controls">
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>الوقت</th>
+                            <th>اسم المنتج</th>
+                            <th>المورد</th>
+                            <th>الكمية</th>
+                            <th>السعر</th>
+                            <th>الإجمالي</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyItems"></tbody>
+                </table>
+            </div>
+            <div class="history-summary">
+                <div class="summary-item">
+                    <span>عدد العمليات:</span>
+                    <span id="operationsCount">0</span>
+                </div>
+                <div class="summary-item">
+                    <span>إجمالي القيمة:</span>
+                    <span id="totalValue">0 جنيه</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
